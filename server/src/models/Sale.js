@@ -43,7 +43,11 @@ const saleItemSchema = new mongoose.Schema(
 
     lineTotal: { type: Number, default: 0 }, // allocations ke lineTotal ka sum
   },
-  { _id: false }
+  {
+    _id: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
 // Virtual: customer ko dikhane ke liye average price per unit
@@ -56,10 +60,16 @@ saleItemSchema.virtual("avgUnitPrice").get(function () {
  * ------------------------------------------------------------------ */
 const saleSchema = new mongoose.Schema(
   {
+    // ---- Multi-tenant: ye invoice kis pharmacy ki hai ----
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: [true, "Store is required"],
+    },
+
+    // unique yahan nahi, neeche compound index me (store ke andar unique)
     invoiceNumber: {
       type: String,
-      unique: true,
-      index: true,
     },
     items: {
       type: [saleItemSchema],
@@ -99,6 +109,17 @@ const saleSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+/* ------------------------------------------------------------------
+ * INDEXES
+ * ------------------------------------------------------------------ */
+
+// Invoice number har store ke andar unique. Do pharmacies ke invoice
+// number same ho sakte hain, ek store me duplicate nahi.
+saleSchema.index({ store: 1, invoiceNumber: 1 }, { unique: true });
+
+// Sales history: "is store ki sales, nayi pehle" (dashboard/reports me)
+saleSchema.index({ store: 1, createdAt: -1 });
 
 /* ------------------------------------------------------------------
  * PRE-VALIDATE HOOK

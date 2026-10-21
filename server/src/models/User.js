@@ -4,11 +4,14 @@ import bcrypt from "bcryptjs";
 
 /* ------------------------------------------------------------------
  * ROLES
- * V1 me sirf ADMIN hai (owner akela sab kuch sambhalta hai).
- * Future me staff rakhna ho to neeche wali commented lines khol dein
- * aur ROLES me add kar dein. Baaki code change nahi hoga.
+ * SUPER_ADMIN : platform ka malik (aap). Stores register karta hai.
+ *               Kisi store se juda nahi hota (store field khali).
+ * ADMIN       : pharmacy ka owner (Store Admin). Sirf apni store ka data.
+ *
+ * Future (V2) me staff roles yahan add honge.
  * ------------------------------------------------------------------ */
 export const ROLES = {
+  SUPER_ADMIN: "super_admin",
   ADMIN: "admin",
   // PHARMACIST: "pharmacist", // V2
   // CASHIER: "cashier",       // V2
@@ -27,7 +30,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,
+      unique: true, // login email poore platform me unique (ek email = ek account)
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
@@ -41,8 +44,23 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: Object.values(ROLES),
-      default: ROLES.ADMIN, // V1: har user admin hai
+      default: ROLES.ADMIN,
     },
+
+    // ---- Multi-tenant: ye user kis pharmacy ka hai ----
+    // SUPER_ADMIN ke liye khali rehta hai, baaki sab ke liye zaroori.
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      index: true,
+      required: [
+        function () {
+          return this.role !== ROLES.SUPER_ADMIN;
+        },
+        "Store is required for this user",
+      ],
+    },
+
     isActive: {
       type: Boolean,
       default: true,

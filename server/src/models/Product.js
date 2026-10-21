@@ -64,6 +64,14 @@ batchSchema.virtual("expiryStatus").get(function () {
  * ------------------------------------------------------------------ */
 const productSchema = new mongoose.Schema(
   {
+    // ---- Multi-tenant: ye product kis pharmacy ka hai ----
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Store",
+      required: [true, "Store is required"],
+      index: true, // har query store se filter hogi, isliye index zaroori
+    },
+
     // ---- Master Info ----
     title: {
       type: String,
@@ -88,8 +96,7 @@ const productSchema = new mongoose.Schema(
     barcode: {
       type: String,
       trim: true,
-      unique: true,
-      sparse: true, // barcode optional hai, lekin jo ho wo unique ho
+      // unique yahan nahi, neeche compound index me (store ke andar unique)
     },
     reorderLevel: {
       type: Number,
@@ -112,9 +119,25 @@ const productSchema = new mongoose.Schema(
 );
 
 /* ------------------------------------------------------------------
- * INDEXES (fast search ke liye)
+ * INDEXES
  * ------------------------------------------------------------------ */
+
+// Barcode har store ke andar unique. Do alag pharmacies ek hi barcode
+// use kar sakti hain. partialFilterExpression ka matlab: jin products
+// ka barcode hi nahi (ya khali hai) un par ye rule lagu nahi hota.
+productSchema.index(
+  { store: 1, barcode: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { barcode: { $type: "string", $gt: "" } },
+  }
+);
+
+// Fast search: title aur generic name se
 productSchema.index({ title: "text", genericName: "text" });
+
+// Store ke andar naam se sorting/filter
+productSchema.index({ store: 1, title: 1 });
 
 /* ------------------------------------------------------------------
  * VIRTUALS (database me save nahi hote, runtime pe calculate hote hain)
