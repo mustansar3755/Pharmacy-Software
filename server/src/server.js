@@ -8,6 +8,9 @@ import cookieParser from "cookie-parser";
 
 import connectDB from "./config/db.js";
 
+import authRoutes from "./routes/authRoutes.js";
+
+
 // TEMPORARY: models import kiye taake syntax errors abhi pakre jayen.
 // Jab controllers banenge to ye lines hata denge.
 import "./models/Product.js";
@@ -43,7 +46,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 // Yahan aage hum routes lagayenge:
-// app.use("/api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 // app.use("/api/products", productRoutes);
 // app.use("/api/sales", saleRoutes);
 
