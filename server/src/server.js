@@ -9,7 +9,8 @@ import cookieParser from "cookie-parser";
 import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
-
+import productRoutes from "./routes/productRoutes.js";
+import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 // TEMPORARY: models import kiye taake syntax errors abhi pakre jayen.
 // Jab controllers banenge to ye lines hata denge.
@@ -47,7 +48,7 @@ app.get("/api/health", (_req, res) => {
 
 // Yahan aage hum routes lagayenge:
 app.use("/api/auth", authRoutes);
-// app.use("/api/products", productRoutes);
+app.use("/api/products", productRoutes);
 // app.use("/api/sales", saleRoutes);
 
 /* ------------------------------------------------------------------
@@ -80,5 +81,9 @@ const startServer = async () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 };
+
+app.use(notFound);
+app.use(errorHandler);
+
 
 startServer();
