@@ -10,6 +10,7 @@ import Login from "../pages/Login"; // built in step 13
 import Dashboard from "../pages/Dashboard";
 import Placeholder from "../pages/Placeholder";
 import NotFound from "../pages/NotFound";
+import ProductList from "../pages/products/ProductList";
 
 /**
  * HomeRedirect: handles the "/" URL.
@@ -51,7 +52,7 @@ export default function AppRoutes() {
                 (Products in step 15, Suppliers in step 16) */}
             <Route
               path="/products"
-              element={<Placeholder title="Products" />}
+              element={<ProductList/>}
             />
             <Route
               path="/suppliers"
