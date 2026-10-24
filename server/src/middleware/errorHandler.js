@@ -9,6 +9,7 @@ const FIELD_LABELS = {
   email: "Email",
   invoiceNumber: "Invoice number",
   batchNumber: "Batch number",
+  name: "Supplier name",
 };
 
 /* ------------------------------------------------------------------

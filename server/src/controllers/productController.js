@@ -41,6 +41,7 @@ const assertNotExpired = (expiryDate) => {
 const MASTER_FIELDS = [
   "title",
   "genericName",
+  "manufacturer",
   "category",
   "rackLocation",
   "barcode",
@@ -92,7 +93,7 @@ export const getProducts = async (req, res) => {
 
   if (search?.trim()) {
     const rx = new RegExp(escapeRegex(search.trim()), "i");
-    and.push({ $or: [{ title: rx }, { genericName: rx }, { barcode: search.trim() }] });
+    and.push({ $or: [{ title: rx }, { genericName: rx },  { manufacturer: rx },{ barcode: search.trim() }] });
   }
 
   // Stock filter: virtual DB me nahi hota, isliye $expr se total nikalte hain

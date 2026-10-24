@@ -10,7 +10,7 @@ export const NEAR_EXPIRY_DAYS = 60;
 /* ------------------------------------------------------------------
  * BATCH SUB-SCHEMA
  * Ek product ke multiple batches hote hain. Har batch ki apni expiry,
- * price aur quantity hoti hai.
+ * price, quantity aur ye record ke maal kis se, kis bill se aya.
  * ------------------------------------------------------------------ */
 const batchSchema = new mongoose.Schema(
   {
@@ -44,6 +44,19 @@ const batchSchema = new mongoose.Schema(
       type: Date,
       default: Date.now, // batch kab stock me aya (FIFO tie-breaker)
     },
+
+    // ---- Traceability: ye batch kahan se aya (dono optional) ----
+    // Opening stock ya bina bill ke maal me khali reh sakte hain.
+    supplier: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Supplier",
+      default: null,
+    },
+    purchase: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Purchase",
+      default: null,
+    },
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -69,7 +82,7 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Store",
       required: [true, "Store is required"],
-      index: true, // har query store se filter hogi, isliye index zaroori
+      index: true,
     },
 
     // ---- Master Info ----
@@ -80,6 +93,11 @@ const productSchema = new mongoose.Schema(
     },
     genericName: {
       type: String, // Salt name, e.g. Paracetamol
+      trim: true,
+      default: "",
+    },
+    manufacturer: {
+      type: String, // Dawai banane wali company, e.g. GSK (optional)
       trim: true,
       default: "",
     },
@@ -122,9 +140,7 @@ const productSchema = new mongoose.Schema(
  * INDEXES
  * ------------------------------------------------------------------ */
 
-// Barcode har store ke andar unique. Do alag pharmacies ek hi barcode
-// use kar sakti hain. partialFilterExpression ka matlab: jin products
-// ka barcode hi nahi (ya khali hai) un par ye rule lagu nahi hota.
+// Barcode har store ke andar unique (sirf jin ka barcode likha ho)
 productSchema.index(
   { store: 1, barcode: 1 },
   {

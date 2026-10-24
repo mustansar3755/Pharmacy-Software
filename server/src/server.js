@@ -10,6 +10,7 @@ import connectDB from "./config/db.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import supplierRoutes from "./routes/supplierRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 // TEMPORARY: models import kiye taake syntax errors abhi pakre jayen.
@@ -49,6 +50,7 @@ app.get("/api/health", (_req, res) => {
 // Yahan aage hum routes lagayenge:
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/suppliers", supplierRoutes);
 // app.use("/api/sales", saleRoutes);
 
 /* ------------------------------------------------------------------
